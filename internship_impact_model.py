@@ -5,42 +5,62 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.ensemble import RandomForestClassifier
 import pickle
+import os
 from sklearn.inspection import permutation_importance
 from sklearn.metrics import accuracy_score
 
-def main():
-    st.title("Internship Impact Modeling")
-    st.write("""
-    ### Predict Student Outcomes Based on Career Center Data
-    This tool allows career counselors to predict various student outcomes based on internship 
-    and career fair participation, helping to identify which factors most influence student success.
-    """)
-    
-    # Load the dataset
-    try:
-        df = pd.read_csv('final_modeling_data.csv')
-    except Exception as e:
-        st.error(f"Error loading dataset: {e}")
-        return
-    
-    # Sidebar for prediction type selection
-    prediction_type = st.sidebar.radio(
-        "What would you like to predict?",
-        ["Student Employment Status", "Continuing Education", "Still Looking Status"]
-    )
-    
-    # Main content based on prediction type
-    if prediction_type == "Student Employment Status":
-        employment_prediction(df)
-    elif prediction_type == "Continuing Education":
-        education_prediction(df)
-    else:
-        still_looking_prediction(df)
-
-def train_models(df):
-    """Train all three models and return them as a dictionary"""
+def load_or_train_models(df, force_retrain=False):
+    """Load models from disk if they exist, otherwise train and save them"""
     models = {}
     
+    # Create models directory if it doesn't exist
+    if not os.path.exists('models'):
+        os.makedirs('models')
+    
+    # Define model paths
+    model_paths = {
+        'working': 'models/rf_model_working.pkl',
+        'education': 'models/rf_model_education.pkl',
+        'still_looking': 'models/rf_model_still_looking.pkl'
+    }
+    
+    # Feature encoding paths
+    encoding_paths = {
+        'working': 'models/X_encoded.pkl',
+        'education': 'models/X_encoded2.pkl',
+        'still_looking': 'models/X_encoded3.pkl'
+    }
+    
+    # Try to load models if they exist and force_retrain is False
+    if not force_retrain:
+        try:
+            # Load models
+            for key, path in model_paths.items():
+                if os.path.exists(path):
+                    with open(path, 'rb') as f:
+                        models[key] = pickle.load(f)
+            
+            # Load encoded features
+            if os.path.exists(encoding_paths['working']):
+                with open(encoding_paths['working'], 'rb') as f:
+                    X_encoded = pickle.load(f)
+                    
+            if os.path.exists(encoding_paths['education']):
+                with open(encoding_paths['education'], 'rb') as f:
+                    X_encoded2 = pickle.load(f)
+                    
+            if os.path.exists(encoding_paths['still_looking']):
+                with open(encoding_paths['still_looking'], 'rb') as f:
+                    X_encoded3 = pickle.load(f)
+                    
+            # If all models and encodings loaded successfully
+            if len(models) == 3 and 'X_encoded' in locals() and 'X_encoded2' in locals() and 'X_encoded3' in locals():
+                return models, X_encoded, X_encoded2, X_encoded3
+                
+        except Exception as e:
+            st.warning(f"Error loading models: {e}. Training new models...")
+    
+    # If we couldn't load models or force_retrain is True, train new ones
     # Model 1: Working Status
     X = df[['avg_unemployment', 'primary_major', 'fairs_above_avg', 'Internship_binary', 'apps_above_avg', 'ipp_flag', 'total_apps']]
     Y = df['Outcome_binary']
@@ -69,12 +89,31 @@ def train_models(df):
     rf_model_still_looking.fit(X_encoded3, Y3)
     models['still_looking'] = rf_model_still_looking
     
+    # Save models and encoded features
+    try:
+        for key, path in model_paths.items():
+            with open(path, 'wb') as f:
+                pickle.dump(models[key], f)
+        
+        with open(encoding_paths['working'], 'wb') as f:
+            pickle.dump(X_encoded, f)
+            
+        with open(encoding_paths['education'], 'wb') as f:
+            pickle.dump(X_encoded2, f)
+            
+        with open(encoding_paths['still_looking'], 'wb') as f:
+            pickle.dump(X_encoded3, f)
+            
+        st.success("Models trained and saved successfully!")
+    except Exception as e:
+        st.warning(f"Error saving models: {e}. Models will be used but not saved.")
+    
     return models, X_encoded, X_encoded2, X_encoded3
 
-def employment_prediction(df):
+def employment_prediction(df, force_retrain=False):
     st.header("Predict Student Employment Status")
     
-    models, X_encoded, _, _ = train_models(df)
+    models, X_encoded, _, _ = load_or_train_models(df, force_retrain)
     model = models['working']
     
     # Form for user input
@@ -153,10 +192,10 @@ def employment_prediction(df):
         # Feature importance
         plot_feature_importance(model, feature_cols)
 
-def education_prediction(df):
+def education_prediction(df, force_retrain=False):
     st.header("Predict Continuing Education")
     
-    models, _, X_encoded2, _ = train_models(df)
+    models, _, X_encoded2, _ = load_or_train_models(df, force_retrain)
     model = models['education']
     
     # Form for user input
@@ -229,10 +268,10 @@ def education_prediction(df):
         # Feature importance
         plot_feature_importance(model, feature_cols)
 
-def still_looking_prediction(df):
+def still_looking_prediction(df, force_retrain=False):
     st.header("Predict If Student Is Still Looking")
     
-    models, _, _, X_encoded3 = train_models(df)
+    models, _, _, X_encoded3 = load_or_train_models(df, force_retrain)
     model = models['still_looking']
     
     # Form for user input
@@ -320,7 +359,7 @@ def plot_feature_importance(model, feature_names):
     
     # Create plot
     fig, ax = plt.subplots(figsize=(10, 6))
-    ax.bar(range(len(indices)), importances[indices], align='center')
+    ax.barh(range(len(indices)), importances[indices], align='center')
     ax.set_yticks(range(len(indices)))
     ax.set_yticklabels([feature_names[i] for i in indices])
     ax.set_xlabel('Feature Importance')
@@ -334,6 +373,43 @@ def plot_feature_importance(model, feature_names):
     - For binary features like internship completion or program participation, a high importance means these factors significantly affect outcomes
     - For majors, importance indicates how strongly a specific major influences the predicted outcome
     """)
+
+def main():
+    st.title("Internship Impact Modeling")
+    st.write("""
+    ### Predict Student Outcomes Based on Career Center Data
+    This tool allows career counselors to predict various student outcomes based on internship 
+    and career fair participation, helping to identify which factors most influence student success.
+    """)
+    
+    # Load the dataset
+    try:
+        df = pd.read_csv('final_modeling_data.csv')
+    except Exception as e:
+        st.error(f"Error loading dataset: {e}")
+        return
+    
+    # Sidebar for prediction type selection and model options
+    st.sidebar.header("Prediction Options")
+    
+    prediction_type = st.sidebar.radio(
+        "What would you like to predict?",
+        ["Student Employment Status", "Continuing Education", "Still Looking Status"]
+    )
+    
+    # Add retrain option in sidebar
+    with st.sidebar.expander("Advanced Options"):
+        retrain = st.checkbox("Retrain models with current data", value=False)
+        if retrain:
+            st.sidebar.warning("Models will be retrained using the current dataset. This may take a moment.")
+    
+    # Main content based on prediction type
+    if prediction_type == "Student Employment Status":
+        employment_prediction(df, force_retrain=retrain)
+    elif prediction_type == "Continuing Education":
+        education_prediction(df, force_retrain=retrain)
+    else:
+        still_looking_prediction(df, force_retrain=retrain)
 
 if __name__ == "__main__":
     main()
