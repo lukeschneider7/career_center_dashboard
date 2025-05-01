@@ -4,7 +4,7 @@ import streamlit as st
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.ensemble import RandomForestClassifier
-import pickle
+#import pickle
 import os
 from sklearn.inspection import permutation_importance
 from sklearn.metrics import accuracy_score
