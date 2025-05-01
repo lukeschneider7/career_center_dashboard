@@ -4,13 +4,28 @@ import streamlit as st
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.ensemble import RandomForestClassifier
-#import pickle
+import pickle  # Uncommented the pickle import
 import os
 from sklearn.inspection import permutation_importance
 from sklearn.metrics import accuracy_score
 
+# Create a key for Streamlit session state to store models
+if 'models' not in st.session_state:
+    st.session_state['models'] = None
+    st.session_state['X_encoded'] = None
+    st.session_state['X_encoded2'] = None
+    st.session_state['X_encoded3'] = None
+    st.session_state['models_loaded'] = False
+
 def load_or_train_models(df, force_retrain=False):
     """Load models from disk if they exist, otherwise train and save them"""
+    # Check if models are already loaded in session state
+    if st.session_state['models_loaded'] and not force_retrain:
+        return (st.session_state['models'], 
+                st.session_state['X_encoded'], 
+                st.session_state['X_encoded2'], 
+                st.session_state['X_encoded3'])
+    
     models = {}
     
     # Create models directory if it doesn't exist
@@ -76,6 +91,14 @@ def load_or_train_models(df, force_retrain=False):
             # If all models and encodings loaded successfully
             if all_models_exist and encodings_exist:
                 st.success("All models loaded successfully!")
+                
+                # Store in session state
+                st.session_state['models'] = models
+                st.session_state['X_encoded'] = X_encoded
+                st.session_state['X_encoded2'] = X_encoded2
+                st.session_state['X_encoded3'] = X_encoded3
+                st.session_state['models_loaded'] = True
+                
                 return models, X_encoded, X_encoded2, X_encoded3
             else:
                 st.warning("Some models or encodings missing. Training new models...")
@@ -138,16 +161,23 @@ def load_or_train_models(df, force_retrain=False):
         st.write("✓ Saved still looking encodings")
             
         st.success("Models trained and saved successfully!")
+        
+        # Store in session state
+        st.session_state['models'] = models
+        st.session_state['X_encoded'] = X_encoded
+        st.session_state['X_encoded2'] = X_encoded2
+        st.session_state['X_encoded3'] = X_encoded3
+        st.session_state['models_loaded'] = True
+        
     except Exception as e:
         st.warning(f"Error saving models: {e}. Models will be used but not saved.")
     
     return models, X_encoded, X_encoded2, X_encoded3
 
 def employment_prediction(df, force_retrain=False):
-    # Display a loading message while retrieving models
-    with st.spinner("Loading models..."):
-        models, X_encoded, _, _ = load_or_train_models(df, force_retrain)
-        model = models['working']
+    # Load models only once per session
+    models, X_encoded, _, _ = load_or_train_models(df, force_retrain)
+    model = models['working']
     
     # Form for user input
     st.markdown('<div class="sub-header">Enter Student Information</div>', unsafe_allow_html=True)
@@ -237,10 +267,9 @@ def employment_prediction(df, force_retrain=False):
             plot_feature_importance(model, feature_cols)
 
 def education_prediction(df, force_retrain=False):
-    # Display a loading message while retrieving models
-    with st.spinner("Loading models..."):
-        models, _, X_encoded2, _ = load_or_train_models(df, force_retrain)
-        model = models['education']
+    # Use stored models instead of reloading
+    models, _, X_encoded2, _ = load_or_train_models(df, force_retrain)
+    model = models['education']
     
     # Form for user input
     st.markdown('<div class="sub-header">Enter Student Information</div>', unsafe_allow_html=True)
@@ -330,10 +359,9 @@ def education_prediction(df, force_retrain=False):
             plot_feature_importance(model, feature_cols)
 
 def still_looking_prediction(df, force_retrain=False):
-    # Display a loading message while retrieving models
-    with st.spinner("Loading models..."):
-        models, _, _, X_encoded3 = load_or_train_models(df, force_retrain)
-        model = models['still_looking']
+    # Use stored models instead of reloading
+    models, _, _, X_encoded3 = load_or_train_models(df, force_retrain)
+    model = models['still_looking']
     
     # Form for user input
     st.markdown('<div class="sub-header">Enter Student Information</div>', unsafe_allow_html=True)
@@ -514,6 +542,8 @@ def main():
     with st.expander("⚙️ Advanced Options"):
         retrain = st.checkbox("Retrain models with current data", value=False)
         if retrain:
+            # Reset the session state flag to force retraining
+            st.session_state['models_loaded'] = False
             st.warning("Models will be retrained using the current dataset. This may take a moment.")
     
     # Content for each tab
@@ -535,4 +565,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
