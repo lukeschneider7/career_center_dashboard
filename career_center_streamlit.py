@@ -29,8 +29,8 @@ elif topic == ':orange[Internships By Major]':
     internships_by_major.page_choice()
 
 elif topic == ':orange[Model]':
-    #exec(open('internship_impact_model.py').read())
-    st.write(-1)
+    import internship_impact_model
+    internship_impact_model.main()
 
 elif topic == ':orange[State Retention Data]':
     st.write(-2)
