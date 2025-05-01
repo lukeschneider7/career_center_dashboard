@@ -450,7 +450,7 @@ def still_looking_prediction(df, force_retrain=False):
             if prediction == 1:
                 st.error(f"This student is likely to be STILL LOOKING for opportunities (Probability: {probability:.2f})")
             else:
-                st.success(f"This student is likely to be SETTLED with their current status (Probability: {1-probability:.2f})")
+                st.success(f"This student is likely to have a post-graduation plan (Probability: {1-probability:.2f})")
             
             # Feature importance
             plot_feature_importance(model, feature_cols)
