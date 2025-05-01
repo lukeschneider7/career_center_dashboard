@@ -50,5 +50,5 @@ else:
         ct.loc['Second Year'] = ct.loc['Second Year']/1218
         ct = ct.applymap(lambda x: f"{x * 100:.2f}%") # Multiply and limit decimals
         ct = round(ct.reset_index(), 2)
-        st.write(ct.iloc[:, :-1)
+        st.write(ct.iloc[:, :-1])
 
