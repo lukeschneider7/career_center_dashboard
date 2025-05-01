@@ -35,7 +35,7 @@ if demographic == 'First Generation Student':
         ct.iloc[1, :] = ct.iloc[1, :]/653 # Row First Gen
         ct = ct.applymap(lambda x: f"{x * 100:.2f}%") # Multiply and limit decimals
         ct = round(ct.reset_index(), 2)
-        st.write(ct.T)
+        st.write(ct.drop_index().T)
 
 else:
     if method == 'Counts':
