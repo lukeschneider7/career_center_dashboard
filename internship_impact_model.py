@@ -4,27 +4,32 @@ import streamlit as st
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.ensemble import RandomForestClassifier
-import pickle  # Uncommented the pickle import
+import pickle 
 import os
 from sklearn.inspection import permutation_importance
 from sklearn.metrics import accuracy_score
 
-# Create a key for Streamlit session state to store models
-if 'models' not in st.session_state:
-    st.session_state['models'] = None
-    st.session_state['X_encoded'] = None
-    st.session_state['X_encoded2'] = None
-    st.session_state['X_encoded3'] = None
-    st.session_state['models_loaded'] = False
+# Initialize session state variables properly
+def init_session_state():
+    if 'models_loaded' not in st.session_state:
+        st.session_state.models_loaded = False
+    if 'models' not in st.session_state:
+        st.session_state.models = None
+    if 'X_encoded' not in st.session_state:
+        st.session_state.X_encoded = None
+    if 'X_encoded2' not in st.session_state:
+        st.session_state.X_encoded2 = None
+    if 'X_encoded3' not in st.session_state:
+        st.session_state.X_encoded3 = None
 
 def load_or_train_models(df, force_retrain=False):
     """Load models from disk if they exist, otherwise train and save them"""
     # Check if models are already loaded in session state
-    if st.session_state['models_loaded'] and not force_retrain:
-        return (st.session_state['models'], 
-                st.session_state['X_encoded'], 
-                st.session_state['X_encoded2'], 
-                st.session_state['X_encoded3'])
+    if st.session_state.models_loaded and not force_retrain:
+        return (st.session_state.models, 
+                st.session_state.X_encoded, 
+                st.session_state.X_encoded2, 
+                st.session_state.X_encoded3)
     
     models = {}
     
@@ -93,11 +98,11 @@ def load_or_train_models(df, force_retrain=False):
                 st.success("All models loaded successfully!")
                 
                 # Store in session state
-                st.session_state['models'] = models
-                st.session_state['X_encoded'] = X_encoded
-                st.session_state['X_encoded2'] = X_encoded2
-                st.session_state['X_encoded3'] = X_encoded3
-                st.session_state['models_loaded'] = True
+                st.session_state.models = models
+                st.session_state.X_encoded = X_encoded
+                st.session_state.X_encoded2 = X_encoded2
+                st.session_state.X_encoded3 = X_encoded3
+                st.session_state.models_loaded = True
                 
                 return models, X_encoded, X_encoded2, X_encoded3
             else:
@@ -163,11 +168,11 @@ def load_or_train_models(df, force_retrain=False):
         st.success("Models trained and saved successfully!")
         
         # Store in session state
-        st.session_state['models'] = models
-        st.session_state['X_encoded'] = X_encoded
-        st.session_state['X_encoded2'] = X_encoded2
-        st.session_state['X_encoded3'] = X_encoded3
-        st.session_state['models_loaded'] = True
+        st.session_state.models = models
+        st.session_state.X_encoded = X_encoded
+        st.session_state.X_encoded2 = X_encoded2
+        st.session_state.X_encoded3 = X_encoded3
+        st.session_state.models_loaded = True
         
     except Exception as e:
         st.warning(f"Error saving models: {e}. Models will be used but not saved.")
@@ -487,6 +492,9 @@ def plot_feature_importance(model, feature_names):
     """, unsafe_allow_html=True)
 
 def main():
+    # Initialize session state
+    init_session_state()
+    
     # Add custom styling
     st.markdown("""
     <style>
@@ -543,7 +551,7 @@ def main():
         retrain = st.checkbox("Retrain models with current data", value=False)
         if retrain:
             # Reset the session state flag to force retraining
-            st.session_state['models_loaded'] = False
+            st.session_state.models_loaded = False
             st.warning("Models will be retrained using the current dataset. This may take a moment.")
     
     # Content for each tab
