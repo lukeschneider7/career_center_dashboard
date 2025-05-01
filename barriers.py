@@ -41,7 +41,7 @@ else:
     if method == 'Counts':
         ct = pd.crosstab(barriers_data[demographic], barriers_data[barriers_col])
         ct = ct.loc[['Fourth Year', 'Second Year', 'Third Year']].reset_index()
-        st.write(ct.iloc[:, :-1].T)
+        st.write(ct.iloc[:, :-1])
     elif method == 'Percentages':
         ct = pd.crosstab(barriers_data[demographic], barriers_data[barriers_col])
         ct = ct.loc[['Fourth Year', 'Second Year', 'Third Year']]# Get rid of junk in data
@@ -50,5 +50,5 @@ else:
         ct.loc['Second Year'] = ct.loc['Second Year']/1218
         ct = ct.applymap(lambda x: f"{x * 100:.2f}%") # Multiply and limit decimals
         ct = round(ct.reset_index(), 2)
-        st.write(ct.iloc[:, :-1.T)
+        st.write(ct.iloc[:, :-1)
 
