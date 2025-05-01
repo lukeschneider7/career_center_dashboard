@@ -27,7 +27,7 @@ if demographic == 'First Generation Student':
         ct = pd.crosstab(barriers_data[demographic], barriers_data[barriers_col]).reset_index()
         ct = ct.fillna(' ')
         ct = ct.iloc[1:-1, :-2]
-        st.write(ct.T)
+        st.dataframe(ct.T)
     elif method == 'Percentages':
         ct = pd.crosstab(barriers_data[demographic], barriers_data[barriers_col])
         ct = ct.iloc[1:-1, :-2] # Get rid of junk in data
