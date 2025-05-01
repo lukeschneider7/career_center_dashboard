@@ -27,7 +27,7 @@ if demographic == 'First Generation Student':
         ct = pd.crosstab(barriers_data[demographic], barriers_data[barriers_col]).reset_index()
         ct = ct.fillna(' ')
         ct = ct.iloc[1:-1, :-2]
-        st.table(ct)
+        st.write(ct)
     elif method == 'Percentages':
         ct = pd.crosstab(barriers_data[demographic], barriers_data[barriers_col])
         ct = ct.iloc[1:-1, :-2] # Get rid of junk in data
@@ -41,7 +41,7 @@ else:
     if method == 'Counts':
         ct = pd.crosstab(barriers_data[demographic], barriers_data[barriers_col])
         ct = ct.loc[['Fourth Year', 'Second Year', 'Third Year']].reset_index()
-        st.table(ct.iloc[:, :-1])
+        st.write(ct.iloc[:, :-1])
     elif method == 'Percentages':
         ct = pd.crosstab(barriers_data[demographic], barriers_data[barriers_col])
         ct = ct.loc[['Fourth Year', 'Second Year', 'Third Year']]# Get rid of junk in data
@@ -50,5 +50,5 @@ else:
         ct.loc['Second Year'] = ct.loc['Second Year']/1218
         ct = ct.applymap(lambda x: f"{x * 100:.2f}%") # Multiply and limit decimals
         ct = round(ct.reset_index(), 2)
-        st.table(ct.iloc[:, :-1])
+        st.dataframe(ct.iloc[:, :-1])
 
