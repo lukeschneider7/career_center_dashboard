@@ -4,7 +4,7 @@ import streamlit as st
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.ensemble import RandomForestClassifier
-import pickle
+#import pickle
 import os
 from sklearn.inspection import permutation_importance
 from sklearn.metrics import accuracy_score
@@ -171,6 +171,13 @@ def employment_prediction(df, force_retrain=False):
                             index=0,
                             key="internship_emp")  # Add unique key
         internship_binary = 1 if internship == "Yes" else 0
+        
+        # Add the appointment field
+        appointment = st.radio("Attended Career Center Appointment?", 
+                             options=["Yes", "No"], 
+                             index=0,
+                             key="appointment_emp")  # Add unique key
+        appointment_binary = 1 if appointment == "Yes" else 0
     
     with col2:
         fairs_above_avg = st.radio("Career Fair Attendance Above Average?", 
@@ -198,7 +205,8 @@ def employment_prediction(df, force_retrain=False):
         'Internship_binary': [internship_binary],
         'apps_above_avg': [apps_above_avg_binary],
         'ipp_flag': [ipp_flag_binary],
-        'primary_major': [primary_major]
+        'primary_major': [primary_major],
+        'appointment_binary': [appointment_binary]  # Add the appointment field
     })
     
     # One-hot encode the features
@@ -256,6 +264,13 @@ def education_prediction(df, force_retrain=False):
                             index=0,
                             key="internship_edu")  # Add unique key
         internship_binary = 1 if internship == "Yes" else 0
+        
+        # Add the appointment field
+        appointment = st.radio("Attended Career Center Appointment?", 
+                             options=["Yes", "No"], 
+                             index=0,
+                             key="appointment_edu")  # Add unique key
+        appointment_binary = 1 if appointment == "Yes" else 0
     
     with col2:
         fairs_above_avg = st.radio("Career Fair Attendance Above Average?", 
@@ -283,7 +298,8 @@ def education_prediction(df, force_retrain=False):
         'Internship_binary': [internship_binary],
         'apps_above_avg': [apps_above_avg_binary],
         'ipp_flag': [ipp_flag_binary],
-        'primary_major': [primary_major]
+        'primary_major': [primary_major],
+        'appointment_binary': [appointment_binary]  # Add the appointment field
     })
     
     # One-hot encode the features
@@ -341,6 +357,13 @@ def still_looking_prediction(df, force_retrain=False):
                             index=0,
                             key="internship_sl")  # Add unique key
         internship_binary = 1 if internship == "Yes" else 0
+        
+        # Add the appointment field
+        appointment = st.radio("Attended Career Center Appointment?", 
+                             options=["Yes", "No"], 
+                             index=0,
+                             key="appointment_sl")  # Add unique key
+        appointment_binary = 1 if appointment == "Yes" else 0
     
     with col2:
         fairs_above_avg = st.radio("Career Fair Attendance Above Average?", 
@@ -368,7 +391,8 @@ def still_looking_prediction(df, force_retrain=False):
         'Internship_binary': [internship_binary],
         'apps_above_avg': [apps_above_avg_binary],
         'ipp_flag': [ipp_flag_binary],
-        'primary_major': [primary_major]
+        'primary_major': [primary_major],
+        'appointment_binary': [appointment_binary]  # Add the appointment field
     })
     
     # One-hot encode the features
@@ -428,7 +452,7 @@ def plot_feature_importance(model, feature_names):
     <h3>Interpretation Guide</h3>
     <ul>
         <li><strong>Higher feature importance</strong> indicates that the feature has more influence on the prediction</li>
-        <li>For binary features like internship completion or program participation, a high importance means these factors significantly affect outcomes</li>
+        <li>For binary features like internship completion, appointment attendance, or program participation, a high importance means these factors significantly affect outcomes</li>
         <li>For majors, importance indicates how strongly a specific major influences the predicted outcome</li>
     </ul>
     </div>
