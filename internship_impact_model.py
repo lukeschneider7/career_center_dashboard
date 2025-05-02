@@ -215,13 +215,13 @@ def employment_prediction(df, force_retrain=False):
         appointment_binary = 1 if appointment == "Yes" else 0
     
     with col2:
-        fairs_above_avg = st.radio("Career Fair Attendance Above Average?", 
+        fairs_above_avg = st.radio("Career Fair Attendance Above Average?(2 Fairs)", 
                                   options=["Yes", "No"], 
                                   index=0,
                                   key="fairs_emp")  # Add unique key
         fairs_above_avg_binary = 1 if fairs_above_avg == "Yes" else 0
         
-        apps_above_avg = st.radio("Applications Submitted Above Average?", 
+        apps_above_avg = st.radio("Applications Submitted Above Average?(47 Applications)", 
                                  options=["Yes", "No"], 
                                  index=0,
                                  key="apps_emp")  # Add unique key
@@ -307,13 +307,13 @@ def education_prediction(df, force_retrain=False):
         appointment_binary = 1 if appointment == "Yes" else 0
     
     with col2:
-        fairs_above_avg = st.radio("Career Fair Attendance Above Average?", 
+        fairs_above_avg = st.radio("Career Fair Attendance Above Average?(2 Fairs)", 
                                   options=["Yes", "No"], 
                                   index=0,
                                   key="fairs_edu")  # Add unique key
         fairs_above_avg_binary = 1 if fairs_above_avg == "Yes" else 0
         
-        apps_above_avg = st.radio("Applications Submitted Above Average?", 
+        apps_above_avg = st.radio("Applications Submitted Above Average?(47 Applications)", 
                                  options=["Yes", "No"], 
                                  index=0,
                                  key="apps_edu")  # Add unique key
@@ -399,13 +399,13 @@ def still_looking_prediction(df, force_retrain=False):
         appointment_binary = 1 if appointment == "Yes" else 0
     
     with col2:
-        fairs_above_avg = st.radio("Career Fair Attendance Above Average?", 
+        fairs_above_avg = st.radio("Career Fair Attendance Above Average?(2 Fairs)", 
                                   options=["Yes", "No"], 
                                   index=0,
                                   key="fairs_sl")  # Add unique key
         fairs_above_avg_binary = 1 if fairs_above_avg == "Yes" else 0
         
-        apps_above_avg = st.radio("Applications Submitted Above Average?", 
+        apps_above_avg = st.radio("Applications Submitted Above Average?(47 Applications)", 
                                  options=["Yes", "No"], 
                                  index=0,
                                  key="apps_sl")  # Add unique key
@@ -479,18 +479,6 @@ def plot_feature_importance(model, feature_names):
     
     st.pyplot(fig)
     
-    # Add interpretation
-    st.markdown("""
-    <div class="interpretation">
-    <h3>Interpretation Guide</h3>
-    <ul>
-        <li><strong>Higher feature importance</strong> indicates that the feature has more influence on the prediction</li>
-        <li>For binary features like internship completion, appointment attendance, or program participation, a high importance means these factors significantly affect outcomes</li>
-        <li>For majors, importance indicates how strongly a specific major influences the predicted outcome</li>
-    </ul>
-    </div>
-    """, unsafe_allow_html=True)
-
 def main():
     # Initialize session state
     init_session_state()
