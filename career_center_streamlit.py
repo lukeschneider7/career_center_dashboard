@@ -10,7 +10,7 @@ st.sidebar.image('uva.png', width=200, )  # Adjust the width as needed
 topic = st.radio(
     'What UVA Career Center Data Do you Want to Explore? ',
     [':orange[Trends by School at UVA]', ':orange[Internships By Major]', ':orange[Model]', 
-     ':orange[First Generation Students]', ':rainbow[State Retention Data]', ':orange[Barriers]'], horizontal=True)
+     ':orange[First Generation Students]'], horizontal=True)
 
 
 
