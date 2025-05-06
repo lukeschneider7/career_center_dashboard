@@ -32,9 +32,9 @@ def main():
 
     if visual == "Overview":
         # Make unified num_internships column
-        handshake_data['num_internships'] = pd.concat([handshake_data['Number of Internships'],  # 2024 
+        handshake_data['num_internships'] = pd.concat([handshake_data['point_of_interest2'],  # 2024 
                                                        handshake_data['num_internships_from_plans'], # plans only
-                                                handshake_data['Number of Internships_fds_2023'], 
+                                                handshake_data['point_of_interest2_fds_2023'], 
                                                  handshake_data['If you participated in internships, how many internships did you have while attending the University of Virginia?_fds_2022'],
                                                 handshake_data['How many internships (summer and/or academic year) did you have while attending the University of Virginia?_fds_2021']],
                                                 ignore_index=True)
@@ -48,7 +48,7 @@ def main():
         bars = ax.bar(percentages.index, percentages.values, width=0.8)
         # Add labels on top of bars (percentages)
         ax.bar_label(bars, labels=[f"{v:.2f}%" for v in percentages.values], padding=3)
-        ax.set_xlabel('Number of Internships by UVA Student')
+        ax.set_xlabel('point_of_interest2 by UVA Student')
         ax.set_ylabel(f'Percent of Students')
         ax.set_title(f'UVA Class of 2021-2024 Percent of Students with 0, 1, 2, 3+ internships')
         ax.legend(title=f"Among {len(data)} UVA Graduates 2021-2024" , bbox_to_anchor=(1, 1), framealpha=.5) 
@@ -98,16 +98,18 @@ def main():
             help="Click to download data of students in this plot as CSV!")
         st.write('Rows:',data.shape[0], "Columns", data.shape[1], data.head(3))
     
-
-    elif visual == "Bar Chart":
+    elif visual == 'Cross Tab':
         schools = schools()
+        point_of_interest2 = st.sidebar.selectbox("Which Metric do you want to see?", ["Job Applications", "Internship Applications",
+                                                                          "num_events_checked_in", "num_events_signed_up", "num_appointments", "num_fairs", 
+                                                                            "Alignment", "Career Readiness"])
         avg_stat = st.sidebar.selectbox("Which Stat do you want to see?", ["mean", "median"])
         def bar_chart(poi_stats, counts):
             # Plotting Bar Chart for point_of interest
             fig, ax = plt.subplots(figsize=(10, 6))
             poi_stats.plot(kind='bar', ax=ax, width=0.8)
             # Add labels, title, and legend
-            ax.set_xlabel('Number of Internships')
+            ax.set_xlabel('point_of_interest2')
             ax.set_ylabel(f'{point_of_interest} {avg_stat}')
             ax.set_title(f'{point_of_interest} by Group')
             ax.grid(True)
@@ -127,13 +129,51 @@ def main():
 
         # Group by school
         if schools ==  ['All']:
-            poi_stats = handshake_data.groupby('Number of Internships')[point_of_interest].agg(avg_stat).round(2)
+            poi_stats = handshake_data.groupby(point_of_interest2)[point_of_interest].agg(avg_stat).round(2)
             counts = handshake_data['College_fds_2024'].notnull().sum()
             bar_chart(poi_stats, counts)
         else:
             grouped = handshake_data[handshake_data['College_fds_2024'].isin(schools)]
-            poi_stats = grouped.groupby(['College_fds_2024', 'Number of Internships'])[point_of_interest].agg(avg_stat).round(2).unstack(level=0)
-            counts = grouped.groupby('College_fds_2024')['Number of Internships'].count()
+            poi_stats = grouped.groupby(['College_fds_2024', point_of_interest2])[point_of_interest].agg(avg_stat).round(2).unstack(level=0)
+            counts = grouped.groupby('College_fds_2024')[point_of_interest2].count()
+            bar_chart(poi_stats, counts)
+
+
+    elif visual == "Bar Chart":
+        schools = schools()
+        avg_stat = st.sidebar.selectbox("Which Stat do you want to see?", ["mean", "median"])
+        def bar_chart(poi_stats, counts):
+            # Plotting Bar Chart for point_of interest
+            fig, ax = plt.subplots(figsize=(10, 6))
+            poi_stats.plot(kind='bar', ax=ax, width=0.8)
+            # Add labels, title, and legend
+            ax.set_xlabel('point_of_interest2')
+            ax.set_ylabel(f'{point_of_interest} {avg_stat}')
+            ax.set_title(f'{point_of_interest} by Group')
+            ax.grid(True)
+             # Add values on the bars
+            for container in ax.containers:
+                ax.bar_label(container, fmt='%.1f', padding=3)
+
+            # Modify legend labels to include counts
+            if isinstance(counts, (pd.Series, dict)):  # If counts has multiple values (can use len())
+                legend_labels = [f"{avg_stat} {point_of_interest}\n{group} ({counts[group]} Hoos)" for group in counts.index]
+                ax.legend(legend_labels, title='UVA Schools (2024 Graduating Class)', bbox_to_anchor=(1.05, 1), framealpha=.3) # ,bbox_to_anchor=(1.05, 1)
+            else:  # If counts is a single number (no len())
+                legend_labels = [f"{avg_stat} {point_of_interest}\nUVA 2024 ({counts} students)"]
+                ax.legend(legend_labels, title='All UVA Schools (2024 Graduating Class)', bbox_to_anchor=(1.05, 1), framealpha=.3)
+            st.pyplot(fig)
+
+
+        # Group by school
+        if schools ==  ['All']:
+            poi_stats = handshake_data.groupby('point_of_interest2')[point_of_interest].agg(avg_stat).round(2)
+            counts = handshake_data['College_fds_2024'].notnull().sum()
+            bar_chart(poi_stats, counts)
+        else:
+            grouped = handshake_data[handshake_data['College_fds_2024'].isin(schools)]
+            poi_stats = grouped.groupby(['College_fds_2024', 'point_of_interest2'])[point_of_interest].agg(avg_stat).round(2).unstack(level=0)
+            counts = grouped.groupby('College_fds_2024')['point_of_interest2'].count()
             bar_chart(poi_stats, counts)
 
 
@@ -179,9 +219,9 @@ def main():
     elif visual == "Table":
         schools = schools()
         for school in schools:
-            visual = handshake_data[handshake_data['College_fds_2024'] == school].groupby([ 'College_fds_2024', 'Number of Internships',])[point_of_interest] \
+            visual = handshake_data[handshake_data['College_fds_2024'] == school].groupby([ 'College_fds_2024', 'point_of_interest2',])[point_of_interest] \
                                                                     .agg(['mean', 'median', 'std', 'min', 'max','count']).round(2)
-            st.write(f"{point_of_interest} for {school} 2024 graduates by Number of Internships")
+            st.write(f"{point_of_interest} for {school} 2024 graduates by point_of_interest2")
             st.write(visual)
     else:
         print('error')
