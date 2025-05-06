@@ -10,7 +10,7 @@ def import_data():
 # Function to take user defined input and display data based on this input
 def main():
     handshake_data = import_data()
-    visual = st.sidebar.selectbox("Which Visual do you want to see?", ["Overview", "Bar Chart", "Percentiles", "Table"], key='visual')
+    visual = st.sidebar.selectbox("Which Visual do you want to see?", ["Overview", "Stats by Internship Count", "Cross Tab", "Percentile", "Table"], key='visual')
     point_of_interest = st.sidebar.selectbox("Which Metric do you want to see?", ["Job Applications", "Internship Applications",
                                                                           "num_events_checked_in", "num_events_signed_up", "num_appointments", "num_fairs", 
                                                                             "Alignment", "Career Readiness"])
@@ -32,9 +32,9 @@ def main():
 
     if visual == "Overview":
         # Make unified num_internships column
-        handshake_data['num_internships'] = pd.concat([handshake_data['point_of_interest2'],  # 2024 
+        handshake_data['num_internships'] = pd.concat([handshake_data['Number of Internships'],  # 2024 
                                                        handshake_data['num_internships_from_plans'], # plans only
-                                                handshake_data['point_of_interest2_fds_2023'], 
+                                                handshake_data['Number of Internships_fds_2023'], 
                                                  handshake_data['If you participated in internships, how many internships did you have while attending the University of Virginia?_fds_2022'],
                                                 handshake_data['How many internships (summer and/or academic year) did you have while attending the University of Virginia?_fds_2021']],
                                                 ignore_index=True)
@@ -48,7 +48,7 @@ def main():
         bars = ax.bar(percentages.index, percentages.values, width=0.8)
         # Add labels on top of bars (percentages)
         ax.bar_label(bars, labels=[f"{v:.2f}%" for v in percentages.values], padding=3)
-        ax.set_xlabel('point_of_interest2 by UVA Student')
+        ax.set_xlabel('Number of Internships by UVA Student')
         ax.set_ylabel(f'Percent of Students')
         ax.set_title(f'UVA Class of 2021-2024 Percent of Students with 0, 1, 2, 3+ internships')
         ax.legend(title=f"Among {len(data)} UVA Graduates 2021-2024" , bbox_to_anchor=(1, 1), framealpha=.5) 
@@ -100,7 +100,7 @@ def main():
     
     elif visual == 'Cross Tab':
         schools = schools()
-        point_of_interest2 = st.sidebar.selectbox("Which Metric do you want to see?", ["Job Applications", "Internship Applications",
+        point_of_interest2 = st.sidebar.selectbox("Which 2nd Metric do you want to see?", ["Job Applications", "Internship Applications",
                                                                           "num_events_checked_in", "num_events_signed_up", "num_appointments", "num_fairs", 
                                                                             "Alignment", "Career Readiness"])
         avg_stat = st.sidebar.selectbox("Which Stat do you want to see?", ["mean", "median"])
@@ -109,7 +109,7 @@ def main():
             fig, ax = plt.subplots(figsize=(10, 6))
             poi_stats.plot(kind='bar', ax=ax, width=0.8)
             # Add labels, title, and legend
-            ax.set_xlabel('point_of_interest2')
+            ax.set_xlabel(point_of_interest2)
             ax.set_ylabel(f'{point_of_interest} {avg_stat}')
             ax.set_title(f'{point_of_interest} by Group')
             ax.grid(True)
@@ -139,7 +139,7 @@ def main():
             bar_chart(poi_stats, counts)
 
 
-    elif visual == "Bar Chart":
+    elif visual == "Stats by Internship Count":
         schools = schools()
         avg_stat = st.sidebar.selectbox("Which Stat do you want to see?", ["mean", "median"])
         def bar_chart(poi_stats, counts):
@@ -147,7 +147,7 @@ def main():
             fig, ax = plt.subplots(figsize=(10, 6))
             poi_stats.plot(kind='bar', ax=ax, width=0.8)
             # Add labels, title, and legend
-            ax.set_xlabel('point_of_interest2')
+            ax.set_xlabel('Number of Internships')
             ax.set_ylabel(f'{point_of_interest} {avg_stat}')
             ax.set_title(f'{point_of_interest} by Group')
             ax.grid(True)
@@ -167,13 +167,13 @@ def main():
 
         # Group by school
         if schools ==  ['All']:
-            poi_stats = handshake_data.groupby('point_of_interest2')[point_of_interest].agg(avg_stat).round(2)
+            poi_stats = handshake_data.groupby('Number of Internships')[point_of_interest].agg(avg_stat).round(2)
             counts = handshake_data['College_fds_2024'].notnull().sum()
             bar_chart(poi_stats, counts)
         else:
             grouped = handshake_data[handshake_data['College_fds_2024'].isin(schools)]
-            poi_stats = grouped.groupby(['College_fds_2024', 'point_of_interest2'])[point_of_interest].agg(avg_stat).round(2).unstack(level=0)
-            counts = grouped.groupby('College_fds_2024')['point_of_interest2'].count()
+            poi_stats = grouped.groupby(['College_fds_2024', 'Number of Internships'])[point_of_interest].agg(avg_stat).round(2).unstack(level=0)
+            counts = grouped.groupby('College_fds_2024')['Number of Internships'].count()
             bar_chart(poi_stats, counts)
 
 
@@ -219,9 +219,9 @@ def main():
     elif visual == "Table":
         schools = schools()
         for school in schools:
-            visual = handshake_data[handshake_data['College_fds_2024'] == school].groupby([ 'College_fds_2024', 'point_of_interest2',])[point_of_interest] \
+            visual = handshake_data[handshake_data['College_fds_2024'] == school].groupby([ 'College_fds_2024', 'Number of Internships',])[point_of_interest] \
                                                                     .agg(['mean', 'median', 'std', 'min', 'max','count']).round(2)
-            st.write(f"{point_of_interest} for {school} 2024 graduates by point_of_interest2")
+            st.write(f"{point_of_interest} for {school} 2024 graduates by Number of Internships")
             st.write(visual)
     else:
         print('error')
